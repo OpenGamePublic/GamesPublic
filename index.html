@@ -14,6 +14,11 @@
             overflow: hidden;
             background: #030712;
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            /* ── Bloqueamos la selección de texto con clic izquierdo en toda la web ── */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         #game-iframe {
@@ -191,6 +196,20 @@
     <script>
     (function () {
 
+        /* ── Bloqueo de atajos y clic derecho MOVIDOS ARRIBA ── */
+        /* Así se ejecutan SIEMPRE, incluso si el acceso es denegado */
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+               (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
+                e.preventDefault();
+            }
+        });
+
         /* ── Referencias DOM ─────────────────────── */
         var blockScreen = document.getElementById('block-screen');
         var iframe      = document.getElementById('game-iframe');
@@ -198,7 +217,6 @@
 
         /* ════════════════════════════════════════════
            CAPA 1: User Agent (WebView interno de app)
-           Valor exacto en AppCreator24: Android/WebPublicGames
         ════════════════════════════════════════════ */
         var REQUIRED_UA = 'Android/WebPublicGames';
         var ua          = navigator.userAgent || '';
@@ -206,8 +224,6 @@
 
         /* ════════════════════════════════════════════
            CAPA 2: Token en URL (Chrome externo)
-           La app abre Chrome con ?k=Une3f5iUTan18mmlzW0jOC0w
-           El token se borra de la barra inmediatamente.
         ════════════════════════════════════════════ */
         var REQUIRED_TOKEN = 'Une3f5iUTan18mmlzW0jOC0w';
         var tokenOk        = false;
@@ -231,11 +247,11 @@
         if (!uaOk && !tokenOk) {
             blockScreen.classList.add('visible');
             fsBtn.style.display = 'none';
-            return; /* detiene todo */
+            return; /* detiene la carga del iframe y el resto del script */
         }
 
         /* ════════════════════════════════════════════
-           Carga directa del juego en texto plano
+           Carga directa del juego
         ════════════════════════════════════════════ */
         iframe.src = 'https://db.pastexams.org/html/fnaf2/index.html';
 
@@ -324,19 +340,6 @@
         document.addEventListener('webkitfullscreenchange', onFSChange);
         document.addEventListener('mozfullscreenchange',    onFSChange);
         document.addEventListener('MSFullscreenChange',     onFSChange);
-
-        /* ── Bloqueo de atajos y clic derecho para curiosos ── */
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || 
-               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-               (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
-                e.preventDefault();
-            }
-        });
 
     })();
     </script>
