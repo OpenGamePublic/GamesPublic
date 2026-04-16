@@ -14,7 +14,7 @@
             overflow: hidden;
             background: #030712;
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            /* ── Bloqueamos la selección de texto con clic izquierdo en toda la web ── */
+            /* ── Bloqueamos la selección de texto ── */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -45,25 +45,28 @@
         #block-screen.visible { display: flex; }
 
         #block-screen svg {
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             color: #1a3a4a;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         #block-screen h1 {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: #1a3a4a;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
         #block-screen p {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #0f2430;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+            max-width: 300px;
         }
 
         /* ─── Overlay de rotación ─── */
@@ -83,17 +86,16 @@
         #rotate-overlay.visible { display: flex; }
 
         @keyframes rotar {
-            0%   { transform: rotate(0deg); }
-            40%  { transform: rotate(-90deg); }
-            60%  { transform: rotate(-90deg); }
-            100% { transform: rotate(0deg); }
+            0%, 15%   { transform: rotate(0deg); }
+            40%, 60%  { transform: rotate(-90deg); }
+            85%, 100% { transform: rotate(0deg); }
         }
 
         #rotate-icon {
-            width: 72px;
-            height: 72px;
-            margin-bottom: 28px;
-            animation: rotar 2.4s ease-in-out infinite;
+            width: 76px;
+            height: 76px;
+            margin-bottom: 24px;
+            animation: rotar 2.8s ease-in-out infinite;
             color: #00d4ff;
         }
 
@@ -116,7 +118,7 @@
             text-transform: none;
         }
 
-        /* ─── Botón pantalla completa ─── */
+        /* ─── Botón pantalla completa (Solo Ícono) ─── */
         #fs-btn {
             position: fixed;
             bottom: 18px;
@@ -124,15 +126,12 @@
             z-index: 9998;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
             background: rgba(0, 10, 30, 0.88);
             border: 1.5px solid #00d4ff;
             color: #00d4ff;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
             border-radius: 8px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
@@ -141,18 +140,17 @@
 
         #fs-btn:active {
             background: rgba(0, 212, 255, 0.18);
-            transform: scale(0.97);
+            transform: scale(0.95);
         }
 
         #fs-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             stroke: currentColor;
             stroke-width: 2;
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
-            flex-shrink: 0;
         }
     </style>
 </head>
@@ -163,24 +161,25 @@
     <div id="block-screen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
              stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" stroke="none"></circle>
+            <circle cx="15.5" cy="9.5" r="1.5" fill="currentColor" stroke="none"></circle>
+            <path d="M9 16c1.5-2 4.5-2 6 0"></path>
         </svg>
-        <h1>Acceso restringido</h1>
-        <p>Este contenido solo está disponible<br>desde la aplicación oficial.</p>
+        <h1>Oops, no se pudo cargar el contenido</h1>
+        <p>Este contenido puede no estar disponible en este entorno.<br><br>Intenta acceder desde otra fuente o más tarde.</p>
     </div>
 
     <div id="rotate-overlay" role="alert" aria-live="assertive">
         <svg id="rotate-icon" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.8"
+             stroke="currentColor" stroke-width="1.5"
              stroke-linecap="round" stroke-linejoin="round">
-            <rect x="7" y="1" width="10" height="16" rx="2"/>
-            <circle cx="12" cy="15" r="0.6" fill="currentColor" stroke="none"/>
-            <path d="M3 9 A9 9 0 0 1 21 9"/>
-            <polyline points="21,6 21,9 18,9"/>
+            <rect x="7" y="3" width="10" height="18" rx="2" ry="2"/>
+            <path d="M20 9a9.5 9.5 0 0 0-14 4"/>
+            <polyline points="2 10 6 14 10 10"/>
         </svg>
         <p>Rota tu teléfono</p>
-        <p class="sub">Gira a modo horizontal para jugar</p>
+        <p class="sub">Gira a modo horizontal para mostrar el contenido</p>
     </div>
 
     <button id="fs-btn" aria-label="Pantalla completa">
@@ -190,14 +189,12 @@
             <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
             <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
         </svg>
-        <span id="fs-label">Expandir</span>
     </button>
 
     <script>
     (function () {
 
-        /* ── Bloqueo de atajos y clic derecho MOVIDOS ARRIBA ── */
-        /* Así se ejecutan SIEMPRE, incluso si el acceso es denegado */
+        /* ── Bloqueo de atajos y clic derecho ── */
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
@@ -247,7 +244,7 @@
         if (!uaOk && !tokenOk) {
             blockScreen.classList.add('visible');
             fsBtn.style.display = 'none';
-            return; /* detiene la carga del iframe y el resto del script */
+            return; 
         }
 
         /* ════════════════════════════════════════════
@@ -283,7 +280,6 @@
 
         /* ── Pantalla completa ───────────────────── */
         var fsIcon  = document.getElementById('fs-icon');
-        var fsLabel = document.getElementById('fs-label');
 
         var ICON_EXPAND =
             '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
@@ -329,10 +325,8 @@
         function onFSChange() {
             if (isFullscreen()) {
                 fsIcon.innerHTML = ICON_COMPRESS;
-                fsLabel.textContent = 'Reducir';
             } else {
                 fsIcon.innerHTML = ICON_EXPAND;
-                fsLabel.textContent = 'Expandir';
             }
         }
 
