@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vista Gamer</title>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -14,7 +16,6 @@
             overflow: hidden;
             background: #030712;
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            /* ── Bloqueamos la selección de texto ── */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -44,17 +45,18 @@
 
         #block-screen.visible { display: flex; }
 
+        /* Colores 50% más claros */
         #block-screen svg {
             width: 72px;
             height: 72px;
-            color: #1a3a4a;
+            color: #337494; /* Antes #1a3a4a */
             margin-bottom: 20px;
         }
 
         #block-screen h1 {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #1a3a4a;
+            color: #337494; /* Antes #1a3a4a */
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-bottom: 12px;
@@ -63,7 +65,7 @@
 
         #block-screen p {
             font-size: 0.85rem;
-            color: #0f2430;
+            color: #1e4963; /* Antes #0f2430 */
             letter-spacing: 0.5px;
             line-height: 1.5;
             max-width: 300px;
@@ -91,9 +93,9 @@
             85%, 100% { transform: rotate(0deg); }
         }
 
+        /* Estilo para el nuevo ícono de FontAwesome */
         #rotate-icon {
-            width: 76px;
-            height: 76px;
+            font-size: 72px;
             margin-bottom: 24px;
             animation: rotar 2.8s ease-in-out infinite;
             color: #00d4ff;
@@ -118,7 +120,7 @@
             text-transform: none;
         }
 
-        /* ─── Botón pantalla completa (Solo Ícono) ─── */
+        /* ─── Botón pantalla completa ─── */
         #fs-btn {
             position: fixed;
             bottom: 18px;
@@ -126,12 +128,15 @@
             z-index: 9998;
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
+            gap: 8px;
+            padding: 10px 16px;
             background: rgba(0, 10, 30, 0.88);
             border: 1.5px solid #00d4ff;
             color: #00d4ff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             border-radius: 8px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
@@ -140,17 +145,18 @@
 
         #fs-btn:active {
             background: rgba(0, 212, 255, 0.18);
-            transform: scale(0.95);
+            transform: scale(0.97);
         }
 
         #fs-btn svg {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             stroke: currentColor;
             stroke-width: 2;
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -171,15 +177,9 @@
     </div>
 
     <div id="rotate-overlay" role="alert" aria-live="assertive">
-        <svg id="rotate-icon" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-            <rect x="7" y="3" width="10" height="18" rx="2" ry="2"/>
-            <path d="M20 9a9.5 9.5 0 0 0-14 4"/>
-            <polyline points="2 10 6 14 10 10"/>
-        </svg>
+        <i id="rotate-icon" class="fa-solid fa-mobile-screen-button"></i>
         <p>Rota tu teléfono</p>
-        <p class="sub">Gira a modo horizontal para mostrar el contenido</p>
+        <p class="sub">Gira a modo horizontal para jugar</p>
     </div>
 
     <button id="fs-btn" aria-label="Pantalla completa">
@@ -189,6 +189,7 @@
             <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
             <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
         </svg>
+        <span id="fs-label">Expandir</span>
     </button>
 
     <script>
@@ -280,6 +281,7 @@
 
         /* ── Pantalla completa ───────────────────── */
         var fsIcon  = document.getElementById('fs-icon');
+        var fsLabel = document.getElementById('fs-label'); // Referencia al texto
 
         var ICON_EXPAND =
             '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
@@ -325,8 +327,12 @@
         function onFSChange() {
             if (isFullscreen()) {
                 fsIcon.innerHTML = ICON_COMPRESS;
+                // Ocultamos el texto cuando está expandido
+                fsLabel.style.display = 'none';
             } else {
                 fsIcon.innerHTML = ICON_EXPAND;
+                // Mostramos el texto "Expandir" cuando está reducido
+                fsLabel.style.display = 'inline';
             }
         }
 
