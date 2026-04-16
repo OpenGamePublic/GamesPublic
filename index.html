@@ -4,9 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vista Gamer</title>
+ 
+    <!--
+    ═══════════════════════════════════════════════════════
+     CONFIGURACIÓN DE TU APP EN APPCREATOR24
+    ═══════════════════════════════════════════════════════
+     User Agent (WebView interno):
+         Android/WebPublicGames
+ 
+     URL del botón que abre Chrome externo:
+         https://tuusuario.github.io/juego.html?k=Une3f5iUTan18mmlzW0jOC0w
+ 
+     NO compartas esta URL ni el token con nadie.
+    ═══════════════════════════════════════════════════════
+    -->
+ 
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+ 
         html, body {
             width: 100%;
             height: 100%;
@@ -14,14 +29,14 @@
             background: #030712;
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
         }
-
+ 
         #game-iframe {
             width: 100%;
             height: 100%;
             border: none;
             display: block;
         }
-
+ 
         /* ─── Pantalla de bloqueo ─── */
         #block-screen {
             position: fixed;
@@ -35,18 +50,16 @@
             text-align: center;
             padding: 32px;
         }
-
-        #block-screen.visible {
-            display: flex;
-        }
-
+ 
+        #block-screen.visible { display: flex; }
+ 
         #block-screen svg {
             width: 64px;
             height: 64px;
             color: #1a3a4a;
             margin-bottom: 24px;
         }
-
+ 
         #block-screen h1 {
             font-size: 1.1rem;
             font-weight: 700;
@@ -55,13 +68,13 @@
             letter-spacing: 2px;
             margin-bottom: 10px;
         }
-
+ 
         #block-screen p {
             font-size: 0.8rem;
             color: #0f2430;
             letter-spacing: 1px;
         }
-
+ 
         /* ─── Overlay de rotación ─── */
         #rotate-overlay {
             position: fixed;
@@ -75,18 +88,16 @@
             text-align: center;
             padding: 24px;
         }
-
-        #rotate-overlay.visible {
-            display: flex;
-        }
-
+ 
+        #rotate-overlay.visible { display: flex; }
+ 
         @keyframes rotar {
             0%   { transform: rotate(0deg); }
             40%  { transform: rotate(-90deg); }
             60%  { transform: rotate(-90deg); }
             100% { transform: rotate(0deg); }
         }
-
+ 
         #rotate-icon {
             width: 72px;
             height: 72px;
@@ -94,7 +105,7 @@
             animation: rotar 2.4s ease-in-out infinite;
             color: #00d4ff;
         }
-
+ 
         #rotate-overlay p {
             font-size: 1.25rem;
             font-weight: 700;
@@ -104,7 +115,7 @@
             max-width: 280px;
             line-height: 1.5;
         }
-
+ 
         #rotate-overlay .sub {
             font-size: 0.85rem;
             font-weight: 400;
@@ -113,7 +124,7 @@
             letter-spacing: 1px;
             text-transform: none;
         }
-
+ 
         /* ─── Botón pantalla completa ─── */
         #fs-btn {
             position: fixed;
@@ -136,12 +147,12 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-
+ 
         #fs-btn:active {
             background: rgba(0, 212, 255, 0.18);
             transform: scale(0.97);
         }
-
+ 
         #fs-btn svg {
             width: 18px;
             height: 18px;
@@ -155,15 +166,9 @@
     </style>
 </head>
 <body>
-
-    <!-- src vacío hasta verificar UA -->
-    <iframe
-        id="game-iframe"
-        src="about:blank"
-        allowfullscreen
-        allow="fullscreen"
-    ></iframe>
-
+ 
+    <iframe id="game-iframe" src="about:blank" allowfullscreen allow="fullscreen"></iframe>
+ 
     <!-- Pantalla de acceso denegado -->
     <div id="block-screen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -174,7 +179,7 @@
         <h1>Acceso restringido</h1>
         <p>Este contenido solo está disponible<br>desde la aplicación oficial.</p>
     </div>
-
+ 
     <!-- Overlay rotación -->
     <div id="rotate-overlay" role="alert" aria-live="assertive">
         <svg id="rotate-icon" viewBox="0 0 24 24" fill="none"
@@ -188,7 +193,7 @@
         <p>Rota tu teléfono</p>
         <p class="sub">Gira a modo horizontal para jugar</p>
     </div>
-
+ 
     <!-- Botón pantalla completa -->
     <button id="fs-btn" aria-label="Pantalla completa">
         <svg id="fs-icon" viewBox="0 0 24 24">
@@ -199,44 +204,84 @@
         </svg>
         <span id="fs-label">Expandir</span>
     </button>
-
+ 
     <script>
     (function () {
-
-        /* ══════════════════════════════════════════
-           PROTECCIÓN POR USER AGENT
-           En AppCreator24 configura el User Agent
-           con exactamente este texto:
-               Android/WebPublicGames
-        ══════════════════════════════════════════ */
-        var REQUIRED_UA  = 'Android/WebPublicGames';
-        var ua           = navigator.userAgent || '';
-        var blockScreen  = document.getElementById('block-screen');
-        var iframe       = document.getElementById('game-iframe');
-        var fsBtn        = document.getElementById('fs-btn');
-
-        if (ua.indexOf(REQUIRED_UA) === -1) {
-            /* UA no coincide: bloquear y no ejecutar nada más */
+ 
+        /* ── Referencias DOM ─────────────────────── */
+        var blockScreen = document.getElementById('block-screen');
+        var iframe      = document.getElementById('game-iframe');
+        var fsBtn       = document.getElementById('fs-btn');
+ 
+        /* ════════════════════════════════════════════
+           CAPA 1: User Agent (WebView interno de app)
+           Valor exacto en AppCreator24: Android/WebPublicGames
+        ════════════════════════════════════════════ */
+        var REQUIRED_UA = 'Android/WebPublicGames';
+        var ua          = navigator.userAgent || '';
+        var uaOk        = (ua.indexOf(REQUIRED_UA) !== -1);
+ 
+        /* ════════════════════════════════════════════
+           CAPA 2: Token en URL (Chrome externo)
+           La app abre Chrome con ?k=Une3f5iUTan18mmlzW0jOC0w
+           El token se borra de la barra inmediatamente.
+        ════════════════════════════════════════════ */
+        var REQUIRED_TOKEN = 'Une3f5iUTan18mmlzW0jOC0w';
+        var tokenOk        = false;
+ 
+        try {
+            /* URLSearchParams no existe en Android 4, pero sí en Android 7+ */
+            var params = new URLSearchParams(window.location.search);
+            var tk     = params.get('k') || '';
+            tokenOk    = (tk === REQUIRED_TOKEN);
+        } catch (e) {
+            /* Fallback manual para navegadores muy antiguos */
+            var raw = window.location.search;
+            tokenOk = (raw.indexOf('k=' + REQUIRED_TOKEN) !== -1);
+        }
+ 
+        /* Borrar el token de la barra de Chrome inmediatamente
+           history.replaceState es compatible con Android 4.2+        */
+        if (tokenOk && window.history && window.history.replaceState) {
+            try {
+                window.history.replaceState(null, '', window.location.pathname);
+            } catch (e) { /* silencioso */ }
+        }
+ 
+        /* ── Decisión de acceso ──────────────────── */
+        if (!uaOk && !tokenOk) {
+            blockScreen.classList.add('visible');
+            fsBtn.style.display = 'none';
+            return; /* detiene todo */
+        }
+ 
+        /* ════════════════════════════════════════════
+           URL del juego ofuscada en base64.
+           No aparece en texto plano en el inspector.
+           atob() es compatible con Android 4.4+
+        ════════════════════════════════════════════ */
+        try {
+            var enc = 'aHR0cHM6Ly9kYi5wYXN0ZXhhbXMub3JnL2h0bWwvZm5hZjIvaW5kZXguaHRtbA==';
+            iframe.src = atob(enc);
+        } catch (e) {
+            /* Si atob falla (no debería en Android 7+) bloquear */
             blockScreen.classList.add('visible');
             fsBtn.style.display = 'none';
             return;
         }
-
-        /* ── UA correcto: cargar el juego ────────── */
-        iframe.src = 'https://db.pastexams.org/html/fnaf2/index.html';
-
-
-        /* ── Detección Android + rotación ────────── */
+ 
+ 
+        /* ── Detección orientación Android ──────── */
         var isAndroid     = /Android/i.test(ua);
         var rotateOverlay = document.getElementById('rotate-overlay');
-
+ 
         function isPortrait() {
             if (window.screen && window.screen.width > 0 && window.screen.height > 0) {
                 return window.screen.height > window.screen.width;
             }
             return window.innerHeight > window.innerWidth;
         }
-
+ 
         function updateOverlay() {
             if (!isAndroid) return;
             if (isPortrait()) {
@@ -245,28 +290,28 @@
                 rotateOverlay.classList.remove('visible');
             }
         }
-
+ 
         updateOverlay();
         window.addEventListener('orientationchange', function () { setTimeout(updateOverlay, 100); });
         window.addEventListener('resize',            function () { setTimeout(updateOverlay, 50);  });
-
-
+ 
+ 
         /* ── Pantalla completa ───────────────────── */
         var fsIcon  = document.getElementById('fs-icon');
         var fsLabel = document.getElementById('fs-label');
-
+ 
         var ICON_EXPAND =
             '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
             '<path d="M21 8V5a2 2 0 0 0-2-2h-3"/>' +
             '<path d="M3 16v3a2 2 0 0 0 2 2h3"/>' +
             '<path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
-
+ 
         var ICON_COMPRESS =
             '<path d="M8 3v5H3"/>' +
             '<path d="M21 8h-5V3"/>' +
             '<path d="M3 16h5v5"/>' +
             '<path d="M16 21v-5h5"/>';
-
+ 
         function enterFullscreen() {
             var el = document.documentElement;
             if      (el.requestFullscreen)       el.requestFullscreen();
@@ -274,14 +319,14 @@
             else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
             else if (el.msRequestFullscreen)     el.msRequestFullscreen();
         }
-
+ 
         function exitFullscreen() {
             if      (document.exitFullscreen)       document.exitFullscreen();
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             else if (document.mozCancelFullScreen)  document.mozCancelFullScreen();
             else if (document.msExitFullscreen)     document.msExitFullscreen();
         }
-
+ 
         function isFullscreen() {
             return !!(
                 document.fullscreenElement       ||
@@ -290,12 +335,12 @@
                 document.msFullscreenElement
             );
         }
-
+ 
         fsBtn.addEventListener('click', function () {
             if (isFullscreen()) exitFullscreen();
             else enterFullscreen();
         });
-
+ 
         function onFSChange() {
             if (isFullscreen()) {
                 fsIcon.innerHTML = ICON_COMPRESS;
@@ -305,12 +350,12 @@
                 fsLabel.textContent = 'Expandir';
             }
         }
-
+ 
         document.addEventListener('fullscreenchange',       onFSChange);
         document.addEventListener('webkitfullscreenchange', onFSChange);
         document.addEventListener('mozfullscreenchange',    onFSChange);
         document.addEventListener('MSFullscreenChange',     onFSChange);
-
+ 
     })();
     </script>
 </body>
