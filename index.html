@@ -45,18 +45,17 @@
 
         #block-screen.visible { display: flex; }
 
-        /* Colores 50% más claros */
         #block-screen svg {
             width: 72px;
             height: 72px;
-            color: #337494; /* Antes #1a3a4a */
+            color: #337494;
             margin-bottom: 20px;
         }
 
         #block-screen h1 {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #337494; /* Antes #1a3a4a */
+            color: #337494;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             margin-bottom: 12px;
@@ -65,7 +64,7 @@
 
         #block-screen p {
             font-size: 0.85rem;
-            color: #1e4963; /* Antes #0f2430 */
+            color: #1e4963;
             letter-spacing: 0.5px;
             line-height: 1.5;
             max-width: 300px;
@@ -93,7 +92,6 @@
             85%, 100% { transform: rotate(0deg); }
         }
 
-        /* Estilo para el nuevo ícono de FontAwesome */
         #rotate-icon {
             font-size: 72px;
             margin-bottom: 24px;
@@ -120,6 +118,58 @@
             text-transform: none;
         }
 
+        /* ─── NUEVO: Popunder Inferior Izquierdo ─── */
+        #popunder-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9998; /* Justo debajo del overlay de rotación */
+            background: rgba(0, 10, 30, 0.95);
+            border: 2px solid #00d4ff; /* Borde azul a juego con la UI */
+            border-radius: 12px; /* Esquinas redondeadas */
+            padding: 25px 15px 15px 15px; /* Espacio extra arriba para la X */
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            align-items: center;
+            width: 300px; /* Tamaño base */
+            max-width: 35vw; /* Responsivo: no ocupará más del 35% del ancho en landscape */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        #popunder-info.visible {
+            display: flex;
+        }
+
+        /* Botón de cierre (X) */
+        #popunder-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #00d4ff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px;
+        }
+
+        /* Imagen responsiva */
+        #popunder-info img {
+            width: 100%;
+            height: auto; /* Mantiene proporciones */
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        /* Texto del popunder */
+        #popunder-info p {
+            color: #ffffff;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+
         /* ─── Botón pantalla completa ─── */
         #fs-btn {
             position: fixed;
@@ -140,7 +190,6 @@
             border-radius: 8px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
 
         #fs-btn:active {
@@ -182,6 +231,12 @@
         <p class="sub">Gira a modo horizontal para ver el contenido</p>
     </div>
 
+    <div id="popunder-info">
+        <div id="popunder-close">&times;</div>
+        <img src="https://i.postimg.cc/hGMvQCfB/Cap-Sign.jpg" alt="Instrucción de juego">
+        <p>Recuerda que para avanzar debes dar clic en el boton de en medio.</p>
+    </div>
+
     <button id="fs-btn" aria-label="Pantalla completa">
         <svg id="fs-icon" viewBox="0 0 24 24">
             <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
@@ -212,6 +267,18 @@
         var blockScreen = document.getElementById('block-screen');
         var iframe      = document.getElementById('game-iframe');
         var fsBtn       = document.getElementById('fs-btn');
+        
+        /* Referencias del Popunder */
+        var popunder = document.getElementById('popunder-info');
+        var popunderClose = document.getElementById('popunder-close');
+        var popunderDismissed = false; // Bandera para saber si el usuario ya lo cerró
+        var userHasRotated = false; // Bandera para asegurar que aparece después de rotar
+
+        /* Lógica para cerrar el popunder */
+        popunderClose.addEventListener('click', function() {
+            popunder.classList.remove('visible');
+            popunderDismissed = true; // No lo volvemos a mostrar
+        });
 
         /* ════════════════════════════════════════════
            CAPA 1: User Agent (WebView interno de app)
@@ -253,7 +320,6 @@
         ════════════════════════════════════════════ */
         iframe.src = 'https://db.pastexams.org/html/minecraft/index.html';
 
-
         /* ── Detección orientación Android ──────── */
         var isAndroid     = /Android/i.test(ua);
         var rotateOverlay = document.getElementById('rotate-overlay');
@@ -267,10 +333,18 @@
 
         function updateOverlay() {
             if (!isAndroid) return;
+            
             if (isPortrait()) {
                 rotateOverlay.classList.add('visible');
+                popunder.classList.remove('visible'); // Ocultar popunder si vuelve a vertical
             } else {
                 rotateOverlay.classList.remove('visible');
+                userHasRotated = true; // Registramos que el usuario ya rotó
+                
+                // Mostrar popunder solo si rotó a landscape, tiene permiso de acceso y no lo ha cerrado
+                if (userHasRotated && !popunderDismissed && (uaOk || tokenOk)) {
+                    popunder.classList.add('visible');
+                }
             }
         }
 
@@ -281,7 +355,7 @@
 
         /* ── Pantalla completa ───────────────────── */
         var fsIcon  = document.getElementById('fs-icon');
-        var fsLabel = document.getElementById('fs-label'); // Referencia al texto
+        var fsLabel = document.getElementById('fs-label'); 
 
         var ICON_EXPAND =
             '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
@@ -327,11 +401,9 @@
         function onFSChange() {
             if (isFullscreen()) {
                 fsIcon.innerHTML = ICON_COMPRESS;
-                // Ocultamos el texto cuando está expandido
                 fsLabel.style.display = 'none';
             } else {
                 fsIcon.innerHTML = ICON_EXPAND;
-                // Mostramos el texto "Expandir" cuando está reducido
                 fsLabel.style.display = 'inline';
             }
         }
