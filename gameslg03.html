@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vista Gamer</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #030712;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* ─── Pantalla de bloqueo ─── */
+        #block-screen {
+            position: fixed;
+            inset: 0;
+            background: #030712;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 32px;
+        }
+
+        #block-screen.visible { display: flex; }
+
+        /* Colores 50% más claros */
+        #block-screen svg {
+            width: 72px;
+            height: 72px;
+            color: #337494; /* Antes #1a3a4a */
+            margin-bottom: 20px;
+        }
+
+        #block-screen h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #337494; /* Antes #1a3a4a */
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        #block-screen p {
+            font-size: 0.85rem;
+            color: #1e4963; /* Antes #0f2430 */
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+            max-width: 300px;
+        }
+
+        /* ─── Overlay de rotación ─── */
+        #rotate-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.97);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+        }
+
+        #rotate-overlay.visible { display: flex; }
+
+        @keyframes rotar {
+            0%, 15%   { transform: rotate(0deg); }
+            40%, 60%  { transform: rotate(-90deg); }
+            85%, 100% { transform: rotate(0deg); }
+        }
+
+        /* Estilo para el nuevo ícono de FontAwesome */
+        #rotate-icon {
+            font-size: 72px;
+            margin-bottom: 24px;
+            animation: rotar 2.8s ease-in-out infinite;
+            color: #00d4ff;
+        }
+
+        #rotate-overlay p {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #00d4ff;
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        #rotate-overlay .sub {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #4a8fa8;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            text-transform: none;
+        }
+
+        /* ─── Botón pantalla completa ─── */
+        #fs-btn {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(0, 10, 30, 0.88);
+            border: 1.5px solid #00d4ff;
+            color: #00d4ff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 8px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        #fs-btn:active {
+            background: rgba(0, 212, 255, 0.18);
+            transform: scale(0.97);
+        }
+
+        #fs-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe id="game-iframe" src="about:blank" allowfullscreen allow="fullscreen"></iframe>
+
+    <div id="block-screen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" stroke="none"></circle>
+            <circle cx="15.5" cy="9.5" r="1.5" fill="currentColor" stroke="none"></circle>
+            <path d="M9 16c1.5-2 4.5-2 6 0"></path>
+        </svg>
+        <h1>Oops, no se pudo cargar el contenido</h1>
+        <p>Este contenido puede no estar disponible en este entorno.<br><br>Intenta acceder desde otra fuente o más tarde.</p>
+    </div>
+
+    <div id="rotate-overlay" role="alert" aria-live="assertive">
+        <i id="rotate-icon" class="fa-solid fa-mobile-screen-button"></i>
+        <p>Rota tu teléfono</p>
+        <p class="sub">Gira a modo horizontal para ver el contenido</p>
+    </div>
+
+    <button id="fs-btn" aria-label="Pantalla completa">
+        <svg id="fs-icon" viewBox="0 0 24 24">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+            <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        <span id="fs-label">Expandir</span>
+    </button>
+
+    <script>
+    (function () {
+
+        /* ── Bloqueo de atajos y clic derecho ── */
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+               (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
+                e.preventDefault();
+            }
+        });
+
+        /* ── Referencias DOM ─────────────────────── */
+        var blockScreen = document.getElementById('block-screen');
+        var iframe      = document.getElementById('game-iframe');
+        var fsBtn       = document.getElementById('fs-btn');
+
+        /* ════════════════════════════════════════════
+           CAPA 1: User Agent (WebView interno de app)
+        ════════════════════════════════════════════ */
+        var REQUIRED_UA = 'Android/WebPublicGames';
+        var ua          = navigator.userAgent || '';
+        var uaOk        = (ua.indexOf(REQUIRED_UA) !== -1);
+
+        /* ════════════════════════════════════════════
+           CAPA 2: Token en URL (Chrome externo)
+        ════════════════════════════════════════════ */
+        var REQUIRED_TOKEN = 'Une3f5iUTan18mmlzW0jOC0w';
+        var tokenOk        = false;
+
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var tk     = params.get('k') || '';
+            tokenOk    = (tk === REQUIRED_TOKEN);
+        } catch (e) {
+            var raw = window.location.search;
+            tokenOk = (raw.indexOf('k=' + REQUIRED_TOKEN) !== -1);
+        }
+
+        if (tokenOk && window.history && window.history.replaceState) {
+            try {
+                window.history.replaceState(null, '', window.location.pathname);
+            } catch (e) { /* silencioso */ }
+        }
+
+        /* ── Decisión de acceso ──────────────────── */
+        if (!uaOk && !tokenOk) {
+            blockScreen.classList.add('visible');
+            fsBtn.style.display = 'none';
+            return; 
+        }
+
+        /* ════════════════════════════════════════════
+           Carga directa del juego
+        ════════════════════════════════════════════ */
+        iframe.src = 'https://classicjoy.games/embed?slug=metal-slug-3';
+
+
+        /* ── Detección orientación Android ──────── */
+        var isAndroid     = /Android/i.test(ua);
+        var rotateOverlay = document.getElementById('rotate-overlay');
+
+        function isPortrait() {
+            if (window.screen && window.screen.width > 0 && window.screen.height > 0) {
+                return window.screen.height > window.screen.width;
+            }
+            return window.innerHeight > window.innerWidth;
+        }
+
+        function updateOverlay() {
+            if (!isAndroid) return;
+            if (isPortrait()) {
+                rotateOverlay.classList.add('visible');
+            } else {
+                rotateOverlay.classList.remove('visible');
+            }
+        }
+
+        updateOverlay();
+        window.addEventListener('orientationchange', function () { setTimeout(updateOverlay, 100); });
+        window.addEventListener('resize',            function () { setTimeout(updateOverlay, 50);  });
+
+
+        /* ── Pantalla completa ───────────────────── */
+        var fsIcon  = document.getElementById('fs-icon');
+        var fsLabel = document.getElementById('fs-label'); // Referencia al texto
+
+        var ICON_EXPAND =
+            '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
+            '<path d="M21 8V5a2 2 0 0 0-2-2h-3"/>' +
+            '<path d="M3 16v3a2 2 0 0 0 2 2h3"/>' +
+            '<path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
+
+        var ICON_COMPRESS =
+            '<path d="M8 3v5H3"/>' +
+            '<path d="M21 8h-5V3"/>' +
+            '<path d="M3 16h5v5"/>' +
+            '<path d="M16 21v-5h5"/>';
+
+        function enterFullscreen() {
+            var el = document.documentElement;
+            if      (el.requestFullscreen)       el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+            else if (el.msRequestFullscreen)     el.msRequestFullscreen();
+        }
+
+        function exitFullscreen() {
+            if      (document.exitFullscreen)       document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen)  document.mozCancelFullScreen();
+            else if (document.msExitFullscreen)     document.msExitFullscreen();
+        }
+
+        function isFullscreen() {
+            return !!(
+                document.fullscreenElement       ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement    ||
+                document.msFullscreenElement
+            );
+        }
+
+        fsBtn.addEventListener('click', function () {
+            if (isFullscreen()) exitFullscreen();
+            else enterFullscreen();
+        });
+
+        function onFSChange() {
+            if (isFullscreen()) {
+                fsIcon.innerHTML = ICON_COMPRESS;
+                // Ocultamos el texto cuando está expandido
+                fsLabel.style.display = 'none';
+            } else {
+                fsIcon.innerHTML = ICON_EXPAND;
+                // Mostramos el texto "Expandir" cuando está reducido
+                fsLabel.style.display = 'inline';
+            }
+        }
+
+        document.addEventListener('fullscreenchange',       onFSChange);
+        document.addEventListener('webkitfullscreenchange', onFSChange);
+        document.addEventListener('mozfullscreenchange',    onFSChange);
+        document.addEventListener('MSFullscreenChange',     onFSChange);
+
+    })();
+    </script>
+</body>
+</html>
